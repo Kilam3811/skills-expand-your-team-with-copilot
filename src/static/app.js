@@ -569,6 +569,15 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-section">
+        <span class="share-label">Share:</span>
+        <div class="share-buttons">
+          <button class="share-btn share-twitter" data-activity="${name}" aria-label="Share on X (Twitter)">𝕏</button>
+          <button class="share-btn share-facebook" data-activity="${name}" aria-label="Share on Facebook">f</button>
+          <button class="share-btn share-email" data-activity="${name}" aria-label="Share via Email">✉</button>
+          <button class="share-btn share-copy" data-activity="${name}" aria-label="Copy link">🔗</button>
+        </div>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -586,6 +595,50 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-btn");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const activityName = button.dataset.activity;
+        const activityDetails = allActivities[activityName];
+        const shareText = `Check out this activity at Mergington High School: ${activityName} – ${activityDetails.description}`;
+        const shareUrl = window.location.href;
+
+        if (button.classList.contains("share-twitter")) {
+          window.open(
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        } else if (button.classList.contains("share-facebook")) {
+          window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        } else if (button.classList.contains("share-email")) {
+          const subject = encodeURIComponent(`Check out: ${activityName}`);
+          const body = encodeURIComponent(
+            `${shareText}\n\nSchedule: ${formatSchedule(activityDetails)}\n\nView more activities at: ${shareUrl}`
+          );
+          window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        } else if (button.classList.contains("share-copy")) {
+          navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
+            const original = button.textContent;
+            button.textContent = "✓";
+            button.classList.add("share-copy-success");
+            setTimeout(() => {
+              button.textContent = original;
+              button.classList.remove("share-copy-success");
+            }, 1500);
+          }).catch(() => {
+            showMessage("Unable to copy link. Please copy the URL from your browser's address bar.", "error");
+          });
+        }
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
